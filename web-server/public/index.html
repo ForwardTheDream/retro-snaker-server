@@ -26,7 +26,7 @@
           port: port,
           log: true
         }, function() {
-        pomelo.request("connector.entryHandler.entry", "hello pomelo", function(data) {
+        pomelo.request("connector.entryHandler.onLogin", "{username:client,channelid:clientchannel}", function(data) {
             alert(data.msg);
           });
         });
@@ -51,7 +51,7 @@
         <a href="https://github.com/NetEase/pomelo">https://github.com/NetEase/pomelo</a>
       </div>
       <div class="g-button">
-        <input id="test" type="button" value="Test Game Server" onclick="show()"/>
+        <input id="test" type="button" value="onLogin" onclick="show()"/>
       </div>
     </div>
   </body>

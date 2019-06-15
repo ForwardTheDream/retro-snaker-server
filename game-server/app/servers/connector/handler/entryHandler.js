@@ -58,16 +58,18 @@ Handler.prototype.subscribe = function(msg, session, next) {
  * @param  {Function} next    next stemp callback
  * @return {Void}
  */
-handler.onLogin = function(msg, session, next) {
+Handler.prototype.onLogin = function(msg, session, next) {
 	let self = this;
 	let channel = msg.channel;
 	let username = msg.username;
-	let sexType = msg.sex;
-	let wechatId = msg.wechat;
-	var sessionService = self.app.get('sessionService');
+	// let sexType = msg.sex;
+	// let wechatId = msg.wechat;
+	let sessionService = self.app.get('sessionService');
 
+	console.log('onlogin');
+	console.log('msg.username:' + msg.username);
 	// 重复登录
-	if( !! sessionService.getByUid(wechatId+'*'+channel)) {
+	if( !! sessionService.getByUid(username+'*'+channel)) {
 		next(null, {
 			code: 500,
 			error: true
@@ -75,7 +77,7 @@ handler.onLogin = function(msg, session, next) {
 		return;
 	}
 
-	session.bind(wechatId+'*'+channel);
+	session.bind(username);
 	session.set('rid', channel);
 	session.push('rid', function(err) {
 		if(err) {
@@ -83,13 +85,51 @@ handler.onLogin = function(msg, session, next) {
 		}
 	});
 	session.on('closed', onLeave.bind(null, self.app));
-
-	//put user into channel
-	self.app.rpc.logic.logicRemote.onLogin(session, username+'*'+sexType+'*'+wechatId, self.app.get('serverId'), channel, true, function(users){
+	
+	self.app.rpc.logic.logicRemote.onLogin(session, username, self.app.get('serverId'), channel, true, function(users){
 		next(null, {
 			users:users
 		});
 	});
+
+	console.log('onlogin Finished.');
+};
+
+
+/**
+ * User operate.
+ *
+ * @param  {Object}   msg     request message
+ * @param  {Object}   session current session object
+ * @param  {Function} next    next stemp callback
+ * @return {Void}
+ */
+Handler.prototype.onOperate = function(msg, session, next) {
+	let self = this;
+	let channel = msg.channel;
+	let username = msg.username;
+	let sexType = msg.sex;
+	let wechatId = msg.wechat;
+	var sessionService = self.app.get('sessionService');
+
+	// 已经登录
+	// if( !! sessionService.getByUid(wechatId+'*'+channel)) {
+	// 	session.bind(wechatId+'*'+channel);
+	// 	session.set('rid', channel);
+	// 	session.push('rid', function(err) {
+	// 		if(err) {
+	// 			console.error('set rid for session service failed! error is : %j', err.stack);
+	// 		}
+	// 	});
+	// 	session.on('closed', onLeave.bind(null, self.app));
+	
+	// 	//put user into channel
+	// 	self.app.rpc.logic.logicRemote.onOperate(session, username+'*'+sexType+'*'+wechatId, self.app.get('serverId'), channel, true, function(users){
+	// 		next(null, {
+	// 			users:users
+	// 		});
+	// 	});
+	// }
 };
 
 /**

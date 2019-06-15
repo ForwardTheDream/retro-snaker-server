@@ -18,15 +18,15 @@ var LogicRemote = function(app) {
  */
 LogicRemote.prototype.onLogin = function(uid, sid, name, flag, cb) {
 	let channel = this.channelService.getChannel(name, flag);
-	let username = uid.split('*')[0];
-	let sexType = uid.split('*')[1];
-	let wechatId = uid.split('*')[2];
+	let username = uid;//uid.split('*')[0];
+	// let sexType = uid.split('*')[1];
+	// let wechatId = uid.split('*')[2];
 
 	let param = {
 		route: 'onLogin',
 		user: username,
-		sex: sexType,
-		wechat: wechatId
+		// sex: sexType,
+		// wechat: wechatId
 	};
 
 	channel.pushMessage(param);
@@ -54,9 +54,9 @@ LogicRemote.prototype.get = function(name, flag) {
 	if( !! channel) {
 		users = channel.getMembers();
 	}
-	for(var i = 0; i < users.length; i++) {
-		users[i] = users[i].split('*')[0];
-	}
+	// for(var i = 0; i < users.length; i++) {
+	// 	users[i] = users[i];//users[i].split('*')[0];
+	// }
 	return users;
 };
 
@@ -96,15 +96,15 @@ LogicRemote.prototype.onLeave = function(uid, sid, name, cb) {
 	if( !! channel) {
 		channel.leave(uid, sid);
 	}
-	let username = uid.split('*')[0];
-	let sexType = uid.split('*')[1];
-	let wechatId = uid.split('*')[2];
+	let username = uid;//uid.split('*')[0];
+	// let sexType = uid.split('*')[1];
+	// let wechatId = uid.split('*')[2];
 
 	let param = {
 		route: 'onLeave',
 		user: username,
-		sex: sexType,
-		wechat: wechatId
+		// sex: sexType,
+		// wechat: wechatId
 	};
 
 	channel.pushMessage(param);
