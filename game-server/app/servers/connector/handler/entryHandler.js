@@ -62,12 +62,9 @@ Handler.prototype.onLogin = function(msg, session, next) {
 	let self = this;
 	let channel = msg.channel;
 	let username = msg.username;
-	// let sexType = msg.sex;
-	// let wechatId = msg.wechat;
-	let sessionService = self.app.get('sessionService');
 
-	console.log('onlogin');
-	console.log('msg.username:' + msg.username);
+	let sessionService = self.app.get('sessionService');
+	console.log('login username:' + username + ', channel :' + channel);
 	// 重复登录
 	if( !! sessionService.getByUid(username+'*'+channel)) {
 		next(null, {
@@ -77,7 +74,9 @@ Handler.prototype.onLogin = function(msg, session, next) {
 		return;
 	}
 
-	session.bind(username);
+	var uid = msg.username + '*' + channel;
+	console.log('uid : ' + uid)
+	session.bind(uid);
 	session.set('rid', channel);
 	session.push('rid', function(err) {
 		if(err) {
@@ -86,7 +85,7 @@ Handler.prototype.onLogin = function(msg, session, next) {
 	});
 	session.on('closed', onLeave.bind(null, self.app));
 	
-	self.app.rpc.logic.logicRemote.onLogin(session, username, self.app.get('serverId'), channel, true, function(users){
+	self.app.rpc.logic.logicRemote.onLogin(session, uid, self.app.get('serverId'), channel, true, function(users){
 		next(null, {
 			users:users
 		});
@@ -95,42 +94,32 @@ Handler.prototype.onLogin = function(msg, session, next) {
 	console.log('onlogin Finished.');
 };
 
-
-/**
- * User operate.
- *
- * @param  {Object}   msg     request message
- * @param  {Object}   session current session object
- * @param  {Function} next    next stemp callback
- * @return {Void}
- */
-Handler.prototype.onOperate = function(msg, session, next) {
+Handler.prototype.onLeave = function(msg, session, next) {
 	let self = this;
 	let channel = msg.channel;
 	let username = msg.username;
-	let sexType = msg.sex;
-	let wechatId = msg.wechat;
-	var sessionService = self.app.get('sessionService');
+	let sessionService = self.app.get('sessionService');
 
-	// 已经登录
-	// if( !! sessionService.getByUid(wechatId+'*'+channel)) {
-	// 	session.bind(wechatId+'*'+channel);
-	// 	session.set('rid', channel);
-	// 	session.push('rid', function(err) {
-	// 		if(err) {
-	// 			console.error('set rid for session service failed! error is : %j', err.stack);
-	// 		}
-	// 	});
-	// 	session.on('closed', onLeave.bind(null, self.app));
+	console.log('username: ' + username + ', channel: ' + channel);
+	if( !! sessionService.getByUid(username+'*'+channel)) {
+		self.app.rpc.logic.logicRemote.onLeave(session, username, self.app.get('serverId'), channel, function(users){
+			next(null, {
+				users:users
+			});
+		});
 	
-	// 	//put user into channel
-	// 	self.app.rpc.logic.logicRemote.onOperate(session, username+'*'+sexType+'*'+wechatId, self.app.get('serverId'), channel, true, function(users){
-	// 		next(null, {
-	// 			users:users
-	// 		});
-	// 	});
-	// }
+		let sessionService = self.app.get('sessionService');
+		var uid = username + '*' + channel;
+		sessionService.unbind(self.app.get('serverId'), uid, function(error){
+			console.log(error);
+		});
+		sessionService.remove(self.app.get('serverId'));
+		sessionService.kick(uid, function(){}, function(){});
+
+		console.log('onLeave Finished.');
+	}
 };
+
 
 /**
  * User log out handler

@@ -85,20 +85,26 @@ LogicRemote.prototype.getWeChat = function(name, flag) {
 /**
  * Kick user out chat channel.
  *
- * @param {String} uid unique id for user
+ * @param {String} username user info
  * @param {String} sid server id
- * @param {String} name channel name
+ * @param {String} channel channel name
  *
  */
-LogicRemote.prototype.onLeave = function(uid, sid, name, cb) {
-	var channel = this.channelService.getChannel(name, false);
+LogicRemote.prototype.onLeave = function(username, sid, channelname, cb) {
+	var channel = this.channelService.getChannel(channelname, false);
+	console.log('username:' + username + ', sid : ' + sid + ', channelname : ' + channelname);
 	// leave channel
 	if( !! channel) {
+		console.log('logicRemote -- onLeave username:' + username + ', sid : ' + sid);
+		let uid = username + '*' + channelname;
 		channel.leave(uid, sid);
+
+
+		var users = channel.getMembers();
+		for(var i = 0; i < users.length; i++) {
+			console.log('user : ' + users[i]);
+		}
 	}
-	let username = uid;//uid.split('*')[0];
-	// let sexType = uid.split('*')[1];
-	// let wechatId = uid.split('*')[2];
 
 	let param = {
 		route: 'onLeave',
@@ -109,4 +115,5 @@ LogicRemote.prototype.onLeave = function(uid, sid, name, cb) {
 
 	channel.pushMessage(param);
 	cb();
+
 };
